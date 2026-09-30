@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dattelpalmen-Verwandtschaft – BwInf 45, Aufgabe 5 (Demo)</title>
+<style>
+:root{--sand:#f6efe0;--card:#fffaf0;--palm:#2f5d3a;--palm2:#4d8a55;--date:#7a4a21;--mother:#b5532d;--father:#2d6a8a;--ink:#2b2a22;--line:#dccfae;--err:#a4262c;--ok:#1f6b3a;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,Segoe UI,Arial,sans-serif;background:var(--sand);color:var(--ink);line-height:1.5}
+header{background:linear-gradient(135deg,var(--palm),var(--palm2));color:#fff;padding:1rem 1.2rem}
+header h1{margin:0;font-size:1.4rem}header p{margin:.2rem 0 0;opacity:.9;font-size:.9rem}
+nav{display:flex;flex-wrap:wrap;gap:.4rem;padding:.6rem 1rem;background:#ead9a8;position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
+nav button{border:0;padding:.5rem .8rem;border-radius:.5rem;background:#fff8;color:var(--date);font:inherit;cursor:pointer}
+nav button[aria-current="page"]{background:var(--date);color:#fff}
+main{max-width:1050px;margin:0 auto;padding:1rem}
+section{display:none;background:var(--card);border:1px solid var(--line);border-radius:.8rem;padding:1rem 1.2rem;margin-bottom:1rem}
+section.active{display:block}
+h2{color:var(--palm);margin-top:0}h3{color:var(--date)}
+button,select,input{font:inherit}
+.btn{background:var(--palm);color:#fff;border:0;border-radius:.5rem;padding:.5rem .9rem;cursor:pointer}
+.btn.sec{background:#e6d8b0;color:var(--date)}.btn.del{background:var(--err)}.btn.sm{padding:.2rem .6rem;font-size:.85rem}
+label{display:block;font-weight:600;margin-top:.7rem}
+input,select{width:100%;padding:.5rem;border:1px solid #b9a86f;border-radius:.4rem;background:#fff;color:var(--ink)}
+input[aria-invalid=true],select[aria-invalid=true]{border-color:var(--err);background:#fff2f2}
+.fe{color:var(--err);font-size:.88rem;min-height:1em}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:.8rem}
+.stat{background:#fff;border:1px solid var(--line);border-radius:.6rem;padding:.6rem;text-align:center}.stat b{font-size:1.6rem;color:var(--palm)}
+.notice{background:#fff3c4;border-left:4px solid #d9a400;padding:.5rem .8rem;border-radius:.3rem}
+.msg{padding:.5rem .8rem;border-radius:.4rem;margin:.6rem 0}.msg.ok{background:#e0f3e5;color:var(--ok)}.msg.err{background:#fde7e7;color:var(--err)}
+.tw{overflow-x:auto}table{border-collapse:collapse;width:100%}th,td{border-bottom:1px solid var(--line);padding:.4rem;text-align:left;white-space:nowrap}
+.badge{background:#ead9a8;color:var(--date);border-radius:1rem;padding:0 .5rem;font-size:.75rem}
+code,.code{font-family:Consolas,monospace;background:#efe6c8;padding:.1rem .3rem;border-radius:.3rem}
+.code{display:block;padding:.6rem;overflow-x:auto}
+.result{background:#e9f3e6;border:1px solid var(--palm2);border-radius:.5rem;padding:.6rem .9rem;margin:.6rem 0}
+.result.none{background:#fdf0e0;border-color:#d9a400}
+#treeBox{overflow:auto;background:#fff;border:1px solid var(--line);border-radius:.6rem}
+.node rect{fill:#f3e8c4;stroke:var(--date);stroke-width:1.5}.node{cursor:pointer}.node:focus{outline:none}.node:focus rect{stroke:#000;stroke-width:3}
+.node.sel rect{fill:#f2c14e}.node.anc rect{fill:#cfe6c9}.node.dsc rect{fill:#cfe0ee}
+.node text{font-size:13px;fill:#2b2a22;pointer-events:none}
+.legend span{display:inline-block;margin-right:1rem}
+.row{display:flex;gap:.6rem;flex-wrap:wrap;align-items:end}.row>div{flex:1;min-width:180px}
+dialog{border:1px solid var(--line);border-radius:.8rem;background:var(--card);color:var(--ink);max-width:420px;padding:1.2rem}
+dialog::backdrop{background:#0006}
+dialog p{white-space:pre-line;margin-top:0}
+@media(max-width:600px){main{padding:.5rem}section{padding:.7rem}}
+</style>
+</head>
+<body>
+<header>
+  <h1>🌴 Dattelpalmen-Verwandtschaft</h1>
+  <p>Demo zu Aufgabe 5 · 45. Bundeswettbewerb Informatik</p>
+</header>
+<nav id="nav" aria-label="Hauptnavigation"></nav>
+<main>
+
+<section id="uebersicht" aria-labelledby="h-u">
+  <h2 id="h-u">Übersicht</h2>
+  <div class="notice">Die Startdaten (P1–P6) sind <strong>erfundene Beispieldaten</strong> und dienen nur der Demonstration.</div>
+  <div class="grid" style="margin:1rem 0" id="stats"></div>
+  <details open><summary><strong>Kurzanleitung</strong></summary>
+    <ol>
+      <li><strong>Palmenverwaltung:</strong> Palmen hinzufügen, bearbeiten oder löschen. Unbekannte Eltern bleiben leer.</li>
+      <li><strong>Stammbaum:</strong> Auf eine Palme klicken (oder Tab + Enter), um Details zu sehen. Mutterlinien sind durchgezogen orange, Vaterlinien gestrichelt blau.</li>
+      <li><strong>Verwandtschaft abfragen:</strong> Palme und Frage wählen – Lösungsweg und Antwort werden berechnet.</li>
+      <li><strong>Fragesprache:</strong> Eigene Ausdrücke wie <code>KINDER(P1)</code> testen.</li>
+    </ol>
+    <p>Hinweis: Mit den Beispieldaten hat Berto (P2) keine bekannten Eltern, deshalb bleibt die lange Frage nach der Großmutter väterlicherseits ohne Antwort. Tragen Sie für Berto eine Mutter ein, um sie zu testen.</p>
+  </details>
+  <p class="row"><button class="btn sec" id="btnReset">Beispieldaten zurücksetzen</button>
+  <button class="btn sec" id="btnTest">Logik-Selbsttest (Beispieldaten)</button></p>
+  <div id="testOut" aria-live="polite"></div>
+</section>
+
+<section id="verwaltung" aria-labelledby="h-v">
+  <h2 id="h-v">Palmenverwaltung</h2>
+  <form id="palmForm" novalidate aria-labelledby="formTitle">
+    <h3 id="formTitle">Neue Palme hinzufügen</h3>
+    <div id="formErrs" class="msg err" role="alert" hidden></div>
+    <div class="grid">
+      <div><label for="fId">ID (automatisch)</label><input id="fId" readonly></div>
+      <div><label for="fName">Name</label><input id="fName" autocomplete="off" aria-describedby="eName"><div class="fe" id="eName"></div></div>
+      <div><label for="fMother">Mutter</label><select id="fMother" aria-describedby="eMother"></select><div class="fe" id="eMother"></div></div>
+      <div><label for="fFather">Vater</label><select id="fFather" aria-describedby="eFather"></select><div class="fe" id="eFather"></div></div>
+      <div><label for="fBirth">Geburtsdatum</label><input type="date" id="fBirth" aria-describedby="eBirth"><div class="fe" id="eBirth"></div></div>
+    </div>
+    <p class="row" style="margin-top:1rem"><button class="btn" type="submit" id="btnSave">Hinzufügen</button>
+    <button class="btn sec" type="button" id="btnCancel" hidden>Bearbeiten abbrechen</button></p>
+  </form>
+  <div id="formOk" class="msg ok" role="status" hidden></div>
+  <h3>Alle Palmen</h3>
+  <div class="tw"><table><caption class="fe" style="text-align:left;color:inherit">Übersicht aller gespeicherten Palmen</caption>
+  <thead><tr><th>ID</th><th>Name</th><th>Mutter</th><th>Vater</th><th>Geburt</th><th>Aktionen</th></tr></thead><tbody id="tbody"></tbody></table></div>
+</section>
+
+<section id="stammbaum" aria-labelledby="h-s">
+  <h2 id="h-s">Stammbaum</h2>
+  <div class="row">
+    <div><label for="treePalm">Ausgangspalme</label><select id="treePalm"></select></div>
+    <div><label for="treeMode">Anzeige</label><select id="treeMode"><option value="all">Alle Palmen</option><option value="rel">Nur Vorfahren und Nachkommen der Ausgangspalme</option></select></div>
+  </div>
+  <p class="legend"><span><svg width="34" height="8"><line x1="0" y1="4" x2="34" y2="4" stroke="#b5532d" stroke-width="3"/></svg> Mutter → Kind</span>
+  <span><svg width="34" height="8"><line x1="0" y1="4" x2="34" y2="4" stroke="#2d6a8a" stroke-width="3" stroke-dasharray="6 4"/></svg> Vater → Kind</span>
+  <span>Gelb = Ausgangspalme · Grün = Vorfahren · Blau = Nachkommen</span></p>
+  <div id="treeBox"><svg id="treeSvg" role="img" aria-label="Stammbaum der Dattelpalmen"></svg></div>
+  <div id="detail" class="result" aria-live="polite">Klicken Sie auf eine Palme, um Details zu sehen.</div>
+</section>
+
+<section id="abfrage" aria-labelledby="h-a">
+  <h2 id="h-a">Verwandtschaft abfragen</h2>
+  <div class="row">
+    <div><label for="qPalm">Palme</label><select id="qPalm"></select></div>
+    <div><label for="qQ">Frage</label><select id="qQ"></select></div>
+    <div><button class="btn" id="btnAsk">Abfrage ausführen</button></div>
+  </div>
+  <div id="qOut" aria-live="polite"></div>
+</section>
+
+<section id="sprache" aria-labelledby="h-l">
+  <h2 id="h-l">Erklärung der Fragesprache</h2>
+  <p>Eine Frage ist ein geschachtelter Ausdruck. Er wird von innen nach außen ausgewertet; jede Funktion arbeitet auf einer <em>Menge</em> von Palmen (Ergebnis kann leer sein oder mehrere Palmen enthalten). Die Auswertung ist echtes Parsen und Rechnen auf den gespeicherten Daten – keine KI-Sprachverarbeitung. Umlaute dürfen als AE/OE/UE geschrieben werden.</p>
+  <p>Beispiel: <span class="code">AELTESTER(KINDER(JUENGSTER(HALBBRUEDER(GROSSMUTTER_VÄTERLICH(P6)))))</span></p>
+  <label for="lIn">Eigener Ausdruck</label>
+  <div class="row"><div style="flex:3"><input id="lIn" value="AELTESTER(KINDER(JUENGSTER(HALBBRUEDER(GROSSMUTTER_VÄTERLICH(P6)))))" spellcheck="false"></div>
+  <div><button class="btn" id="btnEval">Auswerten</button></div></div>
+  <p id="lEx"></p>
+  <div id="lOut" aria-live="polite"></div>
+  <h3>Funktionen</h3>
+  <div class="tw"><table><thead><tr><th>Funktion</th><th>Bedeutung</th></tr></thead><tbody id="fnTable"></tbody></table></div>
+  <p>Grammatik: <code>Ausdruck ::= PALME | FUNKTION ( Ausdruck )</code>, wobei <code>PALME</code> eine ID wie <code>P3</code> ist. Da kein Geschlecht gespeichert wird, ist <code>HALBBRUEDER</code> gleichbedeutend mit <code>HALBGESCHWISTER</code>.</p>
+</section>
+
+</main>
+
+<dialog id="dlg" aria-labelledby="dlgMsg">
+  <p id="dlgMsg"></p>
+  <div class="row" style="justify-content:flex-end">
+    <button class="btn sec" id="dlgNo" type="button">Abbrechen</button>
+    <button class="btn del" id="dlgYes" type="button">Bestätigen</button>
+  </div>
+</dialog>
+
+<script>
+"use strict";
+/* ===== Datenmodell ===== */
+const SAMPLE=[
+ {id:"P1",name:"Amina",mother:null,father:null,birth:"1980-01-01",sample:true},
+ {id:"P2",name:"Berto",mother:null,father:null,birth:"1982-01-01",sample:true},
+ {id:"P3",name:"Cora",mother:"P1",father:"P2",birth:"2010-01-01",sample:true},
+ {id:"P4",name:"Dalia",mother:"P1",father:"P2",birth:"2012-01-01",sample:true},
+ {id:"P5",name:"Enno",mother:null,father:"P2",birth:"2014-01-01",sample:true},
+ {id:"P6",name:"Farah",mother:"P1",father:"P2",birth:"2016-01-01",sample:true}];
+const clone=o=>JSON.parse(JSON.stringify(o));
+let palms=(()=>{try{const s=localStorage.getItem("palmen45");if(s)return JSON.parse(s)}catch(e){}return clone(SAMPLE)})();
+let sel=null, editing=null;
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const persist=()=>{try{localStorage.setItem("palmen45",JSON.stringify(palms))}catch(e){}};
+const byId=id=>palms.find(p=>p.id===id);
+const nm=id=>{const p=byId(id);return p?`${p.name} (${p.id})`:id};
+const cmp=(a,b)=>a.birth<b.birth?-1:a.birth>b.birth?1:a.id.localeCompare(b.id,"de",{numeric:true});
+const children=id=>palms.filter(p=>p.mother===id||p.father===id);
+function ancestors(id){const seen=new Set(),st=[id];while(st.length){const p=byId(st.pop());if(!p)continue;[p.mother,p.father].forEach(x=>{if(x&&!seen.has(x)){seen.add(x);st.push(x)}})}return seen}
+function descendants(id){const seen=new Set(),st=[id];while(st.length){children(st.pop()).forEach(c=>{if(!seen.has(c.id)){seen.add(c.id);st.push(c.id)}})}return seen}
+const freeId=()=>{let n=1;while(byId("P"+n))n++;return "P"+n};
+
+/* Eigener Bestätigungsdialog (window.confirm ist in eingebetteten Seiten oft blockiert) */
+function ask(msg){return new Promise(res=>{const d=$("#dlg");
+  if(!d.showModal){res(window.confirm(msg));return}
+  $("#dlgMsg").textContent=msg;
+  const done=v=>{d.close();$("#dlgYes").onclick=$("#dlgNo").onclick=null;d.oncancel=null;res(v)};
+  $("#dlgYes").onclick=()=>done(true);$("#dlgNo").onclick=()=>done(false);
+  d.oncancel=e=>{e.preventDefault();done(false)};
+  d.showModal();$("#dlgNo").focus()})}
+
+/* ===== Verwandtschaftsfunktionen: liefern {ids, note} ===== */
+const roleTxt=r=>r==="mother"?"die Mutter":"der Vater";
+function par(id,role){const p=byId(id);const v=p&&p[role];return v?{ids:[v]}:{ids:[],note:`Bei ${nm(id)} ist ${roleTxt(role)} nicht bekannt.`}}
+function grand(id,via,role){const p=byId(id);const pid=p&&p[via];
+  if(!pid)return{ids:[],note:`Bei ${nm(id)} ist ${roleTxt(via)} nicht bekannt – auf dieser Seite gibt es keine bekannten Großeltern.`};
+  const r=par(pid,role);if(r.note)r.note=`Bei ${nm(pid)} ist ${roleTxt(role)} nicht bekannt.`;return r}
+const both=(a,b)=>({ids:[...new Set([...a.ids,...b.ids])],note:[a.note,b.note].filter(Boolean).join(" ")});
+/* Geschwister: beide bekannten Eltern gleich = voll; genau ein bekannter Elternteil gleich = halb */
+function sibs(id,full){const x=byId(id);
+  const ids=palms.filter(p=>{if(p.id===id)return false;const m=!!x.mother&&p.mother===x.mother,f=!!x.father&&p.father===x.father;return full?(m&&f):((m||f)&&!(m&&f))}).map(p=>p.id);
+  return{ids,note:ids.length?"":`Für ${nm(id)} sind keine ${full?"Geschwister":"Halbgeschwister"} bekannt (gemeinsame Eltern werden nur bei bekannten Elternteilen erkannt).`}}
+function pick(ids,dir){if(!ids.length)return{ids:[],note:"Die Eingabemenge ist leer."};
+  const ps=ids.map(byId).sort(cmp);const ref=dir>0?ps[0].birth:ps[ps.length-1].birth;
+  return{ids:ps.filter(p=>p.birth===ref).map(p=>p.id)}}
+const FUNCS={
+ MUTTER:{nl:"Mutter von",d:"Mutter der Palme",fn:id=>par(id,"mother")},
+ VATER:{nl:"Vater von",d:"Vater der Palme",fn:id=>par(id,"father")},
+ GROSSELTERN_MUETTERLICH:{nl:"Großeltern mütterlicherseits von",d:"Eltern der Mutter",fn:id=>both(grand(id,"mother","mother"),grand(id,"mother","father"))},
+ GROSSELTERN_VAETERLICH:{nl:"Großeltern väterlicherseits von",d:"Eltern des Vaters",fn:id=>both(grand(id,"father","mother"),grand(id,"father","father"))},
+ GROSSMUTTER_MUETTERLICH:{nl:"Großmutter mütterlicherseits von",d:"Mutter der Mutter",fn:id=>grand(id,"mother","mother")},
+ GROSSVATER_MUETTERLICH:{nl:"Großvater mütterlicherseits von",d:"Vater der Mutter",fn:id=>grand(id,"mother","father")},
+ GROSSMUTTER_VAETERLICH:{nl:"Großmutter väterlicherseits von",d:"Mutter des Vaters",fn:id=>grand(id,"father","mother")},
+ GROSSVATER_VAETERLICH:{nl:"Großvater väterlicherseits von",d:"Vater des Vaters",fn:id=>grand(id,"father","father")},
+ GESCHWISTER:{nl:"Geschwister von",d:"Palmen mit denselben (bekannten) Eltern",fn:id=>sibs(id,true)},
+ HALBGESCHWISTER:{nl:"Halbgeschwister von",d:"Palmen mit genau einem gemeinsamen bekannten Elternteil",fn:id=>sibs(id,false)},
+ HALBBRUEDER:{nl:"Halbbrüder von",d:"wie HALBGESCHWISTER (Geschlecht wird nicht gespeichert)",fn:id=>sibs(id,false)},
+ KINDER:{nl:"Kinder von",d:"Palmen, die die Palme als Mutter oder Vater haben",fn:id=>{const k=children(id).map(c=>c.id);return{ids:k,note:k.length?"":`${nm(id)} hat keine Kinder.`}}},
+ AELTESTER:{nl:"Älteste(r) aus",d:"Palme(n) mit dem frühesten Geburtsdatum der Menge (bei Gleichstand alle)",set:true,fn:ids=>pick(ids,1)},
+ JUENGSTER:{nl:"Jüngste(r) aus",d:"Palme(n) mit dem spätesten Geburtsdatum der Menge (bei Gleichstand alle)",set:true,fn:ids=>pick(ids,-1)}
+};
+const norm=s=>s.toUpperCase().replace(/Ä/g,"AE").replace(/Ö/g,"OE").replace(/Ü/g,"UE").replace(/ß/g,"SS").replace(/ẞ/g,"SS");
+
+/* ===== Parser & Auswertung der Fragesprache ===== */
+function parse(src){
+  const s=norm(src).replace(/\s+/g,"");if(!s)throw new Error("Bitte einen Ausdruck eingeben.");
+  const t=s.match(/[A-Z0-9_]+|[()]/g)||[];
+  if(t.join("")!==s)throw new Error("Der Ausdruck enthält ungültige Zeichen.");
+  let i=0;
+  const expr=()=>{const k=t[i++];if(!k||k==="("||k===")")throw new Error("Palme oder Funktion erwartet.");
+    if(/^P\d+$/.test(k))return{type:"id",id:k};
+    if(!FUNCS[k])throw new Error(`Unbekannte Funktion „${k}“.`);
+    if(t[i++]!=="(")throw new Error(`Nach ${k} fehlt eine öffnende Klammer.`);
+    const arg=expr();if(t[i++]!==")")throw new Error(`Zu ${k} fehlt die schließende Klammer.`);
+    return{type:"fn",name:k,arg}};
+  const n=expr();if(i<t.length)throw new Error("Unerwartete Zeichen nach dem Ausdruck.");return n}
+const show=n=>n.type==="id"?n.id:`${n.name}(${show(n.arg)})`;
+/* wertet von innen nach außen aus und protokolliert jeden Schritt */
+function evalNode(n,steps){
+  if(n.type==="id"){if(!byId(n.id))throw new Error(`Die Palme ${n.id} existiert nicht.`);return[n.id]}
+  const input=evalNode(n.arg,steps),f=FUNCS[n.name];let out=[],notes=[];
+  if(f.set){const r=f.fn(input);out=r.ids;if(r.note)notes.push(r.note)}
+  else if(!input.length)notes.push("Die Eingabemenge ist leer – nichts zu berechnen.");
+  else input.forEach(id=>{const r=f.fn(id);out.push(...r.ids);if(r.note)notes.push(r.note)});
+  out=[...new Set(out)].sort((a,b)=>cmp(byId(a),byId(b)));
+  steps.push({expr:show(n),name:n.name,input,out,notes:out.length?[]:notes});return out}
+const list=ids=>ids.length?ids.map(nm).join(", "):"— (keine)";
+function runInto(el,src){
+  try{const tree=parse(src),steps=[],out=evalNode(tree,steps);
+    const chain=[];for(let n=tree;n.type==="fn";n=n.arg)chain.push(FUNCS[n.name].nl);
+    const root=(function r(n){return n.type==="id"?n.id:r(n.arg)})(tree);
+    el.innerHTML=`<h3>Ausdruck</h3><span class="code">${esc(show(tree))}</span>
+    <h3>Bedeutung der Teile</h3><ul>${steps.slice().reverse().map(s=>`<li><code>${s.name}</code> – ${esc(FUNCS[s.name].d)}</li>`).join("")}<li><code>${root}</code> – ${esc(nm(root))}</li></ul>
+    <p><em>Gelesen:</em> ${esc(chain.join(" › "))} › ${esc(nm(root))}</p>
+    <h3>Lösungsweg</h3><ol>${steps.map(s=>`<li><code>${esc(s.expr)}</code>: Eingabe ${esc(list(s.input))} → Ergebnis <strong>${esc(list(s.out))}</strong>${s.notes.length?`<br><small>Grund: ${esc(s.notes.join(" "))}</small>`:""}</li>`).join("")}</ol>
+    <div class="result ${out.length?"":"none"}"><strong>${out.length?(out.length>1?"Antworten":"Antwort"):"Keine Antwort gefunden"}:</strong> ${out.length?esc(list(out)):"Die gesuchte Beziehung ist mit den gespeicherten Daten nicht bekannt (siehe Lösungsweg)."}</div>`}
+  catch(e){el.innerHTML=`<div class="msg err" role="alert">${esc(e.message)}</div>`}}
+
+/* ===== Fragenkatalog ===== */
+const QUESTIONS=[
+ ["Wer ist die Mutter?","MUTTER(#)"],["Wer ist der Vater?","VATER(#)"],
+ ["Wer sind die Großeltern mütterlicherseits?","GROSSELTERN_MUETTERLICH(#)"],
+ ["Wer sind die Großeltern väterlicherseits?","GROSSELTERN_VAETERLICH(#)"],
+ ["Wer sind die Geschwister?","GESCHWISTER(#)"],["Wer sind die Halbgeschwister?","HALBGESCHWISTER(#)"],
+ ["Wer sind die Kinder?","KINDER(#)"],["Wer ist das älteste Kind?","AELTESTER(KINDER(#))"],
+ ["Wer ist der jüngste Halbbruder?","JUENGSTER(HALBBRUEDER(#))"],
+ ["Wer ist das älteste Kind des jüngsten Halbbruders der Großmutter väterlicherseits?","AELTESTER(KINDER(JUENGSTER(HALBBRUEDER(GROSSMUTTER_VAETERLICH(#)))))"]];
+
+/* ===== Validierung ===== */
+const validDate=v=>/^\d{4}-\d{2}-\d{2}$/.test(v)&&new Date(v+"T00:00:00Z").toISOString().slice(0,10)===v;
+function validate(d,edit){
+  const e=[];
+  if(!d.name.trim())e.push(["name","Der Name darf nicht leer sein."]);
+  if(!edit&&byId(d.id))e.push(["name",`Die ID ${d.id} ist bereits vergeben.`]);
+  const dateOk=validDate(d.birth);
+  if(!dateOk)e.push(["birth","Bitte ein gültiges Geburtsdatum eingeben (z. B. 2015-06-30)."]);
+  [["mother","Mutter"],["father","Vater"]].forEach(([k,l])=>{const p=d[k];if(!p)return;
+    if(!byId(p)){e.push([k,`Die gewählte ${l} (${p}) existiert nicht.`]);return}
+    if(p===d.id){e.push([k,"Eine Palme kann nicht ihr eigener Elternteil sein."]);return}
+    if(ancestors(p).has(d.id))e.push([k,`Zyklus: ${nm(p)} stammt selbst von ${d.name.trim()||d.id} ab.`]);
+    if(dateOk&&byId(p).birth>d.birth)e.push([k,`${nm(p)} ist erst am ${byId(p).birth} geboren und damit jünger als das Kind.`])});
+  if(d.mother&&d.mother===d.father)e.push(["father","Mutter und Vater müssen verschiedene Palmen sein."]);
+  if(edit&&dateOk)children(d.id).forEach(c=>{if(c.birth<d.birth)e.push(["birth",`Das Kind ${nm(c.id)} (${c.birth}) wäre älter als diese Palme.`])});
+  return e}
+
+/* ===== Rendering ===== */
+const SECTIONS=[["uebersicht","Übersicht"],["verwaltung","Palmenverwaltung"],["stammbaum","Stammbaum"],["abfrage","Verwandtschaft abfragen"],["sprache","Fragesprache"]];
+function showSection(id){SECTIONS.forEach(([s])=>$("#"+s).classList.toggle("active",s===id));
+  document.querySelectorAll("#nav button").forEach(b=>{if(b.dataset.t===id)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")})}
+function fillSelect(el,withEmpty,emptyTxt,exclude){const v=el.value;
+  el.innerHTML=(withEmpty?`<option value="">${emptyTxt}</option>`:"")+palms.slice().sort(cmp).filter(p=>p.id!==exclude).map(p=>`<option value="${p.id}">${esc(p.name)} (${p.id})</option>`).join("");
+  if([...el.options].some(o=>o.value===v))el.value=v}
+function render(){
+  if(sel&&!byId(sel))sel=null;
+  $("#stats").innerHTML=`<div class="stat"><b>${palms.length}</b><br>Palmen</div><div class="stat"><b>${palms.filter(p=>p.mother||p.father).length}</b><br>mit bekannten Eltern</div><div class="stat"><b>${palms.filter(p=>!p.mother&&!p.father).length}</b><br>ohne bekannte Eltern</div>`;
+  $("#tbody").innerHTML=palms.slice().sort((a,b)=>a.id.localeCompare(b.id,"de",{numeric:true})).map(p=>`<tr><td>${p.id}</td><td>${esc(p.name)} ${p.sample?'<span class="badge">Beispiel</span>':""}</td><td>${p.mother?esc(nm(p.mother)):"unbekannt"}</td><td>${p.father?esc(nm(p.father)):"unbekannt"}</td><td>${p.birth}</td><td><button class="btn sec sm" data-e="${p.id}">Bearbeiten</button> <button class="btn del sm" data-d="${p.id}">Löschen</button></td></tr>`).join("")||`<tr><td colspan="6">Keine Palmen vorhanden.</td></tr>`;
+  fillSelect($("#fMother"),true,"unbekannt",editing);fillSelect($("#fFather"),true,"unbekannt",editing);
+  fillSelect($("#treePalm"),true,"– keine –");fillSelect($("#qPalm"),false);
+  $("#treePalm").value=sel||"";
+  renderTree()}
+
+/* Stammbaum: Ebenen = Generationstiefe, Reihenfolge nach Elternposition (Schwerpunkt) und Alter */
+function renderTree(){
+  const mode=$("#treeMode").value;let vis=palms;
+  if(sel&&mode==="rel"){const r=new Set([sel,...ancestors(sel),...descendants(sel)]);vis=palms.filter(p=>r.has(p.id))}
+  const ids=new Set(vis.map(p=>p.id)),lvl={};
+  const L=(id,g=0)=>{if(lvl[id]!=null)return lvl[id];if(g>200)return 0;const p=byId(id);
+    const ps=[p.mother,p.father].filter(x=>x&&ids.has(x));return lvl[id]=ps.length?1+Math.max(...ps.map(x=>L(x,g+1))):0};
+  vis.forEach(p=>L(p.id));
+  const W=130,H=50,GX=26,GY=90,levels=[];
+  vis.forEach(p=>(levels[lvl[p.id]]=levels[lvl[p.id]]||[]).push(p));
+  const maxN=Math.max(1,...levels.filter(Boolean).map(l=>l.length)),pos={};
+  levels.forEach((row,li)=>{if(!row)return;
+    const bc=p=>{const xs=[p.mother,p.father].filter(x=>pos[x]).map(x=>pos[x].x);return xs.length?xs.reduce((a,b)=>a+b)/xs.length:1e9};
+    row.sort((a,b)=>li===0?cmp(a,b):(bc(a)-bc(b))||cmp(a,b));
+    const off=((maxN-row.length)*(W+GX))/2;
+    row.forEach((p,i)=>pos[p.id]={x:20+off+i*(W+GX),y:20+li*(H+GY)})});
+  const width=40+maxN*(W+GX),height=40+levels.length*(H+GY);
+  const anc=sel?ancestors(sel):new Set(),dsc=sel?descendants(sel):new Set();
+  let s=`<defs></defs>`;
+  vis.forEach(c=>[["mother","#b5532d",""],["father","#2d6a8a","7 5"]].forEach(([k,col,dash])=>{const pid=c[k];if(!pid||!pos[pid])return;
+    const a=pos[pid],b=pos[c.id],x1=a.x+W/2,y1=a.y+H,x2=b.x+W/2,y2=b.y;
+    s+=`<path d="M${x1} ${y1} C${x1} ${y1+45},${x2} ${y2-45},${x2} ${y2}" fill="none" stroke="${col}" stroke-width="2.5" ${dash?`stroke-dasharray="${dash}"`:""}><title>${k==="mother"?"Mutter":"Vater"}: ${esc(byId(pid).name)} → ${esc(c.name)}</title></path>`}));
+  vis.forEach(p=>{const q=pos[p.id],cls=p.id===sel?"sel":anc.has(p.id)?"anc":dsc.has(p.id)?"dsc":"";
+    s+=`<g class="node ${cls}" tabindex="0" role="button" data-id="${p.id}" aria-label="${esc(p.name)}, ${p.id}, geboren ${p.birth}"><rect x="${q.x}" y="${q.y}" width="${W}" height="${H}" rx="10"/><text x="${q.x+W/2}" y="${q.y+21}" text-anchor="middle" font-weight="700">🌴 ${esc(p.name)}</text><text x="${q.x+W/2}" y="${q.y+39}" text-anchor="middle">${p.id} · ${p.birth.slice(0,4)}</text></g>`});
+  const svg=$("#treeSvg");svg.setAttribute("width",width);svg.setAttribute("height",height);svg.setAttribute("viewBox",`0 0 ${width} ${height}`);svg.innerHTML=s;
+  renderDetail()}
+function renderDetail(){const p=sel&&byId(sel);if(!p){$("#detail").textContent="Klicken Sie auf eine Palme, um Details zu sehen.";return}
+  const k=children(p.id).sort(cmp);
+  $("#detail").innerHTML=`<strong>${esc(p.name)}</strong> · ID ${p.id} · geboren ${p.birth}<br>Mutter: ${p.mother?esc(nm(p.mother)):"unbekannt"} · Vater: ${p.father?esc(nm(p.father)):"unbekannt"}<br>Kinder: ${k.length?esc(k.map(c=>nm(c.id)).join(", ")):"keine"}`}
+
+/* ===== Ereignisse ===== */
+$("#nav").innerHTML=SECTIONS.map(([id,t])=>`<button data-t="${id}">${t}</button>`).join("");
+$("#nav").onclick=e=>{if(e.target.dataset.t)showSection(e.target.dataset.t)};
+$("#qQ").innerHTML=QUESTIONS.map((q,i)=>`<option value="${i}">${q[0]}</option>`).join("");
+$("#fnTable").innerHTML=Object.entries(FUNCS).map(([k,f])=>`<tr><td><code>${k}</code></td><td style="white-space:normal">${esc(f.d)}</td></tr>`).join("");
+$("#lEx").innerHTML="Beispiele: "+["MUTTER(P6)","KINDER(P1)","GESCHWISTER(P6)","HALBGESCHWISTER(P6)","AELTESTER(KINDER(P2))","JUENGSTER(HALBBRUEDER(P3))"].map(x=>`<button class="btn sec sm" data-x="${x}">${x}</button>`).join(" ");
+$("#lEx").onclick=e=>{if(e.target.dataset.x){$("#lIn").value=e.target.dataset.x;runInto($("#lOut"),e.target.dataset.x)}};
+$("#btnEval").onclick=()=>runInto($("#lOut"),$("#lIn").value);
+$("#lIn").onkeydown=e=>{if(e.key==="Enter")runInto($("#lOut"),$("#lIn").value)};
+$("#btnAsk").onclick=()=>{const q=QUESTIONS[$("#qQ").value],id=$("#qPalm").value;
+  if(!id){$("#qOut").innerHTML='<div class="msg err" role="alert">Bitte zuerst eine Palme anlegen und auswählen.</div>';return}
+  const expr=q[1].replace("#",id);
+  const o=$("#qOut");runInto(o,expr);
+  o.insertAdjacentHTML("afterbegin",`<h3>Frage</h3><p>${esc(q[0])} <em>(Palme: ${esc(nm(id))})</em></p><h3>Übersetzung in die Fragesprache</h3>`)};
+$("#treePalm").onchange=e=>{sel=e.target.value||null;renderTree()};
+$("#treeMode").onchange=renderTree;
+const pick_=t=>{const g=t.closest(".node");if(g){sel=g.dataset.id;$("#treePalm").value=sel;renderTree()}};
+$("#treeSvg").onclick=e=>pick_(e.target);
+$("#treeSvg").onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();pick_(e.target)}};
+
+function clearForm(){editing=null;$("#palmForm").reset();$("#fId").value=freeId();$("#formTitle").textContent="Neue Palme hinzufügen";$("#btnSave").textContent="Hinzufügen";$("#btnCancel").hidden=true;showErrs([])}
+function showErrs(errs){["name","mother","father","birth"].forEach(k=>{const inp={name:"#fName",mother:"#fMother",father:"#fFather",birth:"#fBirth"}[k];
+    const m=errs.filter(x=>x[0]===k).map(x=>x[1]).join(" ");$("#e"+k[0].toUpperCase()+k.slice(1)).textContent=m;$(inp).setAttribute("aria-invalid",m?"true":"false")});
+  const b=$("#formErrs");b.hidden=!errs.length;b.textContent=errs.length?"Bitte korrigieren Sie die markierten Felder: "+errs.map(x=>x[1]).join(" "):""}
+$("#palmForm").onsubmit=e=>{e.preventDefault();$("#formOk").hidden=true;
+  const d={id:$("#fId").value,name:$("#fName").value,mother:$("#fMother").value||null,father:$("#fFather").value||null,birth:$("#fBirth").value};
+  const errs=validate(d,!!editing);showErrs(errs);if(errs.length)return;
+  d.name=d.name.trim();
+  if(editing){const p=byId(editing);Object.assign(p,d)}else palms.push(d);
+  persist();const msg=`Die Palme „${d.name}“ (${d.id}) wurde ${editing?"geändert":"hinzugefügt"} und gespeichert.`;
+  clearForm();render();const o=$("#formOk");o.textContent=msg;o.hidden=false};
+$("#btnCancel").onclick=()=>{clearForm();render()};
+$("#tbody").onclick=async e=>{const b=e.target;
+  if(b.dataset.e){const p=byId(b.dataset.e);editing=p.id;render();
+    $("#fId").value=p.id;$("#fName").value=p.name;$("#fMother").value=p.mother||"";$("#fFather").value=p.father||"";$("#fBirth").value=p.birth;
+    $("#formTitle").textContent=`Palme ${p.id} bearbeiten`;$("#btnSave").textContent="Änderungen speichern";$("#btnCancel").hidden=false;$("#formOk").hidden=true;showErrs([]);$("#fName").focus()}
+  if(b.dataset.d){const p=byId(b.dataset.d),k=children(p.id).length;
+    if(await ask(`Palme „${p.name}“ (${p.id}) wirklich löschen?${k?`\nBei ${k} Kind(ern) wird dieser Elternteil auf „unbekannt“ gesetzt.`:""}`)){
+      palms=palms.filter(x=>x.id!==p.id);palms.forEach(x=>{if(x.mother===p.id)x.mother=null;if(x.father===p.id)x.father=null});
+      if(editing===p.id)clearForm();persist();render();const o=$("#formOk");o.textContent=`Die Palme „${p.name}“ (${p.id}) wurde gelöscht.`;o.hidden=false}}};
+$("#btnReset").onclick=async()=>{if(await ask("Alle Änderungen verwerfen und die Beispieldaten wiederherstellen?")){palms=clone(SAMPLE);sel=null;persist();clearForm();render();$("#formOk").hidden=true;$("#qOut").innerHTML="";$("#testOut").innerHTML='<div class="msg ok" role="status">Beispieldaten wurden zurückgesetzt.</div>'}};
+
+/* Selbsttest: prüft die Logik gegen die Beispieldaten */
+$("#btnTest").onclick=()=>{
+  const T=[["MUTTER(P6)","P1"],["VATER(P5)","P2"],["MUTTER(P5)",""],["GESCHWISTER(P6)","P3,P4"],["HALBGESCHWISTER(P6)","P5"],["KINDER(P1)","P3,P4,P6"],
+    ["AELTESTER(KINDER(P2))","P3"],["JUENGSTER(HALBBRUEDER(P3))","P5"],["GROSSMUTTER_VAETERLICH(P6)",""]];
+  const bak=palms;palms=clone(SAMPLE);
+  const rows=T.map(([x,exp])=>{let got;try{got=evalNode(parse(x),[]).join(",")}catch(e){got="Fehler: "+e.message}return[x,exp,got,got===exp]});
+  palms=bak;
+  $("#testOut").innerHTML=`<div class="tw"><table><thead><tr><th>Ausdruck</th><th>Erwartet</th><th>Ergebnis</th><th></th></tr></thead><tbody>${rows.map(r=>`<tr><td><code>${r[0]}</code></td><td>${r[1]||"leer"}</td><td>${r[2]||"leer"}</td><td>${r[3]?"✅":"❌"}</td></tr>`).join("")}</tbody></table></div>`};
+
+clearForm();render();showSection("uebersicht");
+</script>
+</body>
+</html>
